@@ -1,0 +1,13 @@
+#container {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+app-grid {
+  width: 100%;
+  max-width: 400px;
+}
+

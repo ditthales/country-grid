@@ -1,0 +1,8 @@
+<div class="grid-container" [style.grid-template-columns]="getGridColumns()">
+  <div *ngFor="let cell of levelMap; let i = index" class="grid-cell" [style.height.px]="cellHeight" (click)="cellClicked(i)">
+    <div class="grid-cell-inner">
+      <img [src]="getAsset(cell, i)" />
+      <p [style.font-size.px]="fontSize">{{this.chosenCountryName}}</p>
+    </div>
+  </div>
+</div>

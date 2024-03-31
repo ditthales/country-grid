@@ -1,0 +1,32 @@
+.grid-container {
+    height: 100%;
+    width: 100%;
+    display: grid;
+  }
+  
+  .grid-cell {
+    text-align: center;
+    border: 1px solid #fff;
+  }
+  
+  .grid-cell-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin: 0 auto; 
+    justify-content: space-between;
+  
+    img {
+      max-height: 80%; /* Alterado para max-width para evitar esticamento */
+      width: auto; /* Adicionado para manter a proporção */
+      object-fit: contain;
+    }
+  
+    p {
+      border: 1px solid #000;
+      margin: 0; /* Removendo margem padrão */
+    }
+  }
+  
