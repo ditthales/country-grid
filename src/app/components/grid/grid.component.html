@@ -1,8 +1,42 @@
-<div class="grid-container" [style.grid-template-columns]="getGridColumns()">
-  <div *ngFor="let cell of levelMap; let i = index" class="grid-cell" [style.height.px]="cellHeight" (click)="cellClicked(i)">
-    <div class="grid-cell-inner">
-      <img [src]="getAsset(cell, i)" />
-      <p [style.font-size.px]="fontSize">{{this.chosenCountryName}}</p>
-    </div>
-  </div>
+<div>
+  <ion-grid class="responsive-grid">
+    <ion-row class="header-row">
+      <!-- Cabeçalhos das colunas -->
+      <ion-col></ion-col>
+      <ion-col *ngFor="let characteristic of characteristicsX">
+        <div class="characteristic-header">{{ characteristic }}</div>
+      </ion-col>
+    </ion-row>
+    <ion-row *ngFor="let row of rows; let i = index">
+      <!-- Cabeçalhos das linhas -->
+      <ion-col class="characteristic-header">{{ characteristicsY[i] }}</ion-col>
+      <!-- Células do grid -->
+      <ion-col *ngFor="let cell of row; let j = index" (click)="cellClicked(i, j)" class="cell-column">
+        <img [src]="cell.image" class="cell-image">
+        <div class="cell-caption">{{ cell.caption }}</div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </div>
+<ion-modal [isOpen]="isModalOpen">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Digite o nome do país</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeModal()">Fechar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <ion-searchbar (ionInput)="onInputChange($event)" [debounce]="500"></ion-searchbar>
+      <ion-list *ngIf="countrySuggestions.length > 0">
+        <ion-item *ngFor="let suggestion of countrySuggestions" (click)="selectSuggestion(suggestion)">
+          {{ translateCountryName(suggestion) }}
+        </ion-item>
+      </ion-list>
+      <!-- <ion-button expand="block" (click)="submitCountry()">Adicionar País</ion-button> -->
+    </ion-content>
+  </ng-template>
+</ion-modal>

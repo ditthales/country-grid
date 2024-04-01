@@ -7,8 +7,6 @@ import { Component } from '@angular/core';
 })
 export class HomePage {
 
-  levelMap = [1,2,3,4,5,6,7,8,9];
-
   constructor() {}
 
 }

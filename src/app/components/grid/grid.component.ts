@@ -1,85 +1,134 @@
-import { Component, ElementRef, HostListener, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CountryService } from 'src/app/services/country.service';
+import { language } from 'src/utils/globals';
+
+interface GridValue {
+  image: string;
+  caption: string;
+  code?: string;
+}
 
 @Component({
   selector: 'app-grid',
   templateUrl: './grid.component.html',
   styleUrls: ['./grid.component.scss'],
 })
-export class GridComponent  implements OnInit {
+export class GridComponent implements OnInit {
 
-  @Input() levelMap: number[] = [];
-  @Input() columns: number = 3;
+  characteristicsX = ['Começa com A', 'É uma ilha', 'Fala Português'];
+  characteristicsY = ['País 1', 'País 2', 'País 3'];
 
-  chosenCountryFlag: string = "";
-  chosenCountryName: string = "";
-  chosenCountryCode: string = "";
-  chosenCountryBorders: any;
-  chosenCountryFlags: any[] = [];
+  rows: GridValue[][] = [
+    [
+      { image: 'https://via.placeholder.com/150', caption: '' },
+      { image: 'https://via.placeholder.com/150', caption: '' },
+      { image: 'https://via.placeholder.com/150', caption: '' },
+    ],
+    [
+      { image: 'https://via.placeholder.com/150', caption: '' },
+      { image: 'https://via.placeholder.com/150', caption: '' },
+      { image: 'https://via.placeholder.com/150', caption: '' },
+    ],
+    [
+      { image: 'https://via.placeholder.com/150', caption: '' },
+      { image: 'https://via.placeholder.com/150', caption: '' },
+      { image: 'https://via.placeholder.com/150', caption: '' },
+    ]
+  ];
 
-  screenWidth: number = window.innerWidth;
-  cellHeight: number = 128;
-  fontSize: number = 16;
+  isModalOpen = false;
+  countryName: string = '';
+
+  language = language
+
+  countrySuggestions: any[] = [];
+
+  selectedCell: {x: number, y: number} | undefined;
 
   constructor(
     private countryService: CountryService,
     private elementRef: ElementRef
-    ) {
+  ) {
 
   }
   ngOnInit(): void {
+    //this.populateGrid();
+    this.populateTitles()
+  }
+
+  populateGrid() {
     this.countryService.getCountryListWithFields("name,flags,cca3,borders").subscribe((data: any) => {
-      const randomIndex = Math.floor(Math.random() * data.length);
-      this.chosenCountryFlag = data[randomIndex].flags.svg;
-      this.chosenCountryName = "Federate States of Micronesia and Furtuna" //data[randomIndex].name.common;
-      this.chosenCountryCode = data[randomIndex].cca3;
-      this.chosenCountryBorders = data[randomIndex].borders;
       const firstTenCountries = data.slice(0, 10);
-      this.chosenCountryFlags = firstTenCountries.map((country: { flags: { svg: any; }; }) => country.flags.svg);
-      console.log(this.chosenCountryCode);
-      console.log(this.chosenCountryName);
-      console.log(this.chosenCountryBorders);
-      this.resizeCells();
+
+      this.rows = [];
+
+      for (let i = 0; i < 3; i++) {
+        const newRow: GridValue[] = [];
+        for (let j = 0; j < 3; j++) {
+          const randomIndex = Math.floor(Math.random() * data.length);
+          newRow.push({ image: data[randomIndex].flags.svg, caption: data[randomIndex].name.common });
+        }
+        // Adicionar a linha à matriz
+        this.rows.push(newRow);
+      }
     });
   }
 
-  @HostListener('window:resize', ['$event'])
-  onResize(event: any) {
-    // Atualiza a largura da tela sempre que ocorrer um evento de redimensionamento
-    this.resizeCells();
+  populateTitles() {
+    this.characteristicsX = ['Começa com A', 'É uma ilha', 'Fala francês'];
+    this.characteristicsY = ['Tem amarelo na bandeira', 'Fala inglês', 'Faz fronteira com a França'];
   }
 
-  resizeCells() {
-    this.screenWidth = window.innerWidth;
-    console.log('Largura da tela:', this.screenWidth);
-    if (this.screenWidth < 400) {
-      this.cellHeight = this.screenWidth / 4.8;
-      this.fontSize = this.screenWidth / 40;
-    } else {
-      this.cellHeight = 128;
+  cellClicked(row: number, col: number) {
+    console.log(`Clicou na linha ${row + 1}, coluna ${col + 1}`);
+    this.selectedCell = {x: row, y: col};
+    this.isModalOpen = true;
+  }
+
+  closeModal() {
+    this.isModalOpen = false;
+  }
+
+  submitCountry() {
+    this.countrySuggestions = []
+    this.closeModal()
+  }
+
+  onInputChange(event: any) {
+    const searchTerm = event.target.value.toLowerCase();
+    let codes: string[] = [];
+    for (const row of this.rows) {
+      for (const cell of row) {
+        if(cell.code) {
+          codes.push(cell.code);
+        }
+      }
     }
+    this.countrySuggestions = this.countryService.searchCountriesExclusiveByLanguage(searchTerm, codes, language)
+    // this.countryService.getCountryListWithFields("name,cca3,flags").subscribe((data: any) => {
+    //   console.log(data);
+    //   this.countrySuggestions = data.filter((country: { name: { common: string; }; }) => {
+    //     const matchesGridContent = this.rows.some(row =>
+    //       row.some(cell => cell.caption.includes(country.name.common))
+    //     );
+    //     return country.name.common.toLowerCase().includes(searchTerm) && !matchesGridContent;
+    //   });
+    // })
   }
 
-  getGridColumns(): string {
-    return `repeat(${this.columns}, 1fr)`;
-  }
-
-  getAsset(asset:number, index:number): string {
-
-    let imageName: string = "";
-
-    if (index === 1) {
-      imageName = "https://flagcdn.com/qa.svg";
-    } else {
-      imageName = this.chosenCountryFlags[index];
+  selectSuggestion(suggestion: any) {
+    if (this.selectedCell) {
+      this.rows[this.selectedCell.x][this.selectedCell.y].caption = this.countryService.translateCountryByCode(suggestion.cca3, language);
+      this.rows[this.selectedCell.x][this.selectedCell.y].image = suggestion.flags.svg;
+      this.rows[this.selectedCell.x][this.selectedCell.y].code = suggestion.cca3;
     }
-
-    return imageName;
+    this.submitCountry();
   }
 
-  cellClicked(index: number): void {
-    console.log(`Cell clicked at (${index})`);
-    // Aqui você pode adicionar lógica adicional para lidar com o clique na célula
+  translateCountryName(suggestion: any) {
+    return this.countryService.translateCountryByCode(suggestion.cca3, language);
   }
+
+
 }
 
