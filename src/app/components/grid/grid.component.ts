@@ -52,26 +52,7 @@ export class GridComponent implements OnInit {
 
   }
   ngOnInit(): void {
-    //this.populateGrid();
     this.populateTitles()
-  }
-
-  populateGrid() {
-    this.countryService.getCountryListWithFields("name,flags,cca3,borders").subscribe((data: any) => {
-      const firstTenCountries = data.slice(0, 10);
-
-      this.rows = [];
-
-      for (let i = 0; i < 3; i++) {
-        const newRow: GridValue[] = [];
-        for (let j = 0; j < 3; j++) {
-          const randomIndex = Math.floor(Math.random() * data.length);
-          newRow.push({ image: data[randomIndex].flags.svg, caption: data[randomIndex].name.common });
-        }
-        // Adicionar a linha à matriz
-        this.rows.push(newRow);
-      }
-    });
   }
 
   populateTitles() {

@@ -10,20 +10,8 @@ export class CountryService {
 
     constructor(private http: HttpClient) { }
 
-    getCountryListWithFields(fields: string) {
-        const url = `https://restcountries.com/v3.1/all?fields=${fields}`
-
-        return this.http.get(url);
-    }
-
     getCountryByCode(code: string): Country | undefined {
         return countries.find(country => country.cca3 === code);
-      }
-
-    getCountryByName(name: string) {
-        let url: string;
-        url = `https://restcountries.com/v3.1/name/${name}?fullText=true`
-        return this.http.get(url);
     }
 
     findCountriesByName(searchName: string): Country[] {
@@ -106,6 +94,10 @@ export class CountryService {
             return this.getCountryByCode(code)?.name?.common || ""
         }
         return this.getCountryByCode(code)?.translations?.[language].common || "";
+    }
+
+    getAtLeast4BordersCountries(): Country[] {
+        return countries.filter(country => country.borders && country.borders.length >= 4);
     }
 
 }
